@@ -26,10 +26,13 @@ function clamp(n: number, a: number, b: number): number {
 }
 
 type WithChildren = { children?: React.ReactNode };
+
 type CardProps = WithChildren & { className?: string };
 function Card({ className = '', children }: CardProps) {
     return (
-        <div className={`rounded-3xl border border-white/10 bg-white/5 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] ${className}`}>
+        <div
+            className={`rounded-3xl border border-white/10 bg-white/5 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] ${className}`}
+        >
             {children}
         </div>
     );
@@ -42,14 +45,12 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 function Button({ variant = 'soft', glow = false, className = '', children, ...props }: ButtonProps) {
     const base =
-        'inline-flex items-center justify-center rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed';
+        'inline-flex items-center justify-center rounded-2xl px-3.5 py-2.5 text-sm font-semibold tracking-tight transition active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed';
     const styles: Record<ButtonVariant, string> = {
         primary:
             'text-black bg-gradient-to-r from-lime-300 via-cyan-300 to-fuchsia-300 shadow-lg shadow-fuchsia-500/10 hover:brightness-110',
-        soft:
-            'text-white bg-white/10 border border-white/10 hover:bg-white/15 hover:border-white/20',
-        ghost:
-            'text-white/80 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/10',
+        soft: 'text-white bg-white/10 border border-white/10 hover:bg-white/15 hover:border-white/20',
+        ghost: 'text-white/80 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/10',
     };
     const glowRing = glow ? 'ring-1 ring-white/15 hover:ring-white/25' : '';
     return (
@@ -82,12 +83,17 @@ function Stat({
     );
 }
 
-function Pill({ children }: WithChildren) {
+function BrandTag() {
     return (
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
-      <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-lime-300 to-cyan-300" />
-            {children}
-    </span>
+        <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2">
+            <span className="h-2 w-2 rounded-full bg-gradient-to-r from-lime-300 to-cyan-300" />
+            <span className="text-sm font-black tracking-[0.18em] text-white/90">
+        CREATED BY{' '}
+                <span className="bg-gradient-to-r from-lime-300 via-cyan-300 to-fuchsia-300 bg-clip-text text-transparent">
+          EXTREME RACING
+        </span>
+      </span>
+        </div>
     );
 }
 
@@ -103,13 +109,13 @@ function InputField(props: {
     return (
         <div className="space-y-2">
             <div className="flex items-end justify-between gap-3">
-                <label className="text-sm font-semibold text-white">{label}</label>
+                <label className="text-sm font-semibold tracking-tight text-white">{label}</label>
                 {unit ? <span className="text-xs font-semibold text-white/60">{unit}</span> : null}
             </div>
             <div className="relative">
                 <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-r from-white/10 via-white/5 to-white/10 opacity-50" />
                 <input
-                    className="relative w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none placeholder:text-white/25 focus:border-white/25 focus:ring-2 focus:ring-white/10"
+                    className="relative w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-[15px] font-medium tracking-tight text-white outline-none placeholder:text-white/25 focus:border-white/25 focus:ring-2 focus:ring-white/10"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     inputMode="decimal"
@@ -151,7 +157,6 @@ export default function Page() {
             return { ok: false, errors: ['Impossibile: la % del bioetanolo è uguale al target.'] };
         }
 
-        // Ve = Vg*(Et - Eg)/(Ea - Et)
         const VeRaw = (Vg * (Et - Eg)) / (Ea - Et);
 
         if (VeRaw < -1e-9) {
@@ -189,7 +194,7 @@ export default function Page() {
     };
 
     return (
-        <div className="min-h-screen bg-[#070812] text-white">
+        <div className="min-h-screen bg-[#070812] text-white antialiased">
             {/* Background */}
             <div className="pointer-events-none fixed inset-0 overflow-hidden">
                 <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-gradient-to-br from-fuchsia-500/25 to-cyan-500/10 blur-3xl" />
@@ -201,34 +206,38 @@ export default function Page() {
             <div className="relative mx-auto max-w-5xl px-4 py-8 md:py-12">
                 {/* Header */}
                 <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-                    <div className="space-y-3">
-                        <Pill>Created by EXTREME RACING</Pill>
+                    <div className="space-y-4">
+                        <BrandTag />
 
                         <div className="space-y-2">
                             <h1 className="text-3xl font-black tracking-tight md:text-5xl">
-                                Calcolatore Miscela <span className="bg-gradient-to-r from-lime-300 via-cyan-300 to-fuchsia-300 bg-clip-text text-transparent">E%</span>
+                                Calcolatore Miscela{' '}
+                                <span className="bg-gradient-to-r from-lime-300 via-cyan-300 to-fuchsia-300 bg-clip-text text-transparent">
+                  E%
+                </span>
                             </h1>
-                            <p className="max-w-xl text-sm text-white/65 md:text-base">
+                            <p className="max-w-xl text-sm leading-relaxed text-white/65 md:text-base">
                                 Inserisci volume iniziale, E% benzina, grado del bioetanolo e target. Calcolo immediato dei litri da aggiungere e stima acqua/impurezze.
                             </p>
                         </div>
                     </div>
 
+                    {/* Buttons: no "Preset/Target" words */}
                     <div className="flex flex-wrap gap-2">
                         <Button variant="primary" glow onClick={() => quickPreset('yourCase')}>
-                            Preset 13L E6 → E40 (E96)
+                            13L E6 → E40 (96)
                         </Button>
                         <Button variant="soft" onClick={() => quickPreset('e10')}>
-                            Benzina E10
+                            E10
                         </Button>
                         <Button variant="soft" onClick={() => quickPreset('e0')}>
-                            Benzina E0
+                            E0
                         </Button>
                         <Button variant="ghost" onClick={() => quickPreset('e30')}>
-                            Target E30
+                            E30
                         </Button>
                         <Button variant="ghost" onClick={() => quickPreset('e50')}>
-                            Target E50
+                            E50
                         </Button>
                     </div>
                 </div>
@@ -306,11 +315,7 @@ export default function Page() {
                             ) : (
                                 <>
                                     <div className="mt-4 grid gap-3">
-                                        <Stat
-                                            label="Bioetanolo da aggiungere"
-                                            value={`${fmt(result.Ve, 2)} L`}
-                                            sub="Litri di E% indicato da versare."
-                                        />
+                                        <Stat label="Bioetanolo da aggiungere" value={`${fmt(result.Ve, 2)} L`} sub="Litri di E% indicato da versare." />
                                         <div className="grid grid-cols-2 gap-3">
                                             <Stat label="Totale miscela" value={`${fmt(result.Vt, 2)} L`} accent="from-white/10 via-cyan-400/20 to-white/10" />
                                             <Stat label="E% finale" value={`${fmt(result.Efinal * 100, 2)}%`} accent="from-lime-400/20 via-fuchsia-400/15 to-cyan-400/20" />
@@ -329,34 +334,6 @@ export default function Page() {
                                     </div>
                                 </>
                             )}
-                        </div>
-                    </Card>
-
-                    {/* Footer notes */}
-                    <Card className="lg:col-span-12">
-                        <div className="p-5 md:p-6">
-                            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                                <div className="text-sm font-black tracking-wide text-white/90">NOTE</div>
-                                <div className="flex flex-wrap gap-2">
-                                    <Pill>Compatibile iPhone (Add to Home)</Pill>
-                                    <Pill>Next.js + Tailwind</Pill>
-                                </div>
-                            </div>
-
-                            <ul className="mt-4 grid gap-3 text-sm text-white/65 md:grid-cols-3">
-                                <li className="rounded-3xl border border-white/10 bg-black/20 p-4">
-                                    <div className="font-semibold text-white">Additività volumi</div>
-                                    <div className="mt-1">Assunzione pratica: volumi additivi (ottima per calcoli reali).</div>
-                                </li>
-                                <li className="rounded-3xl border border-white/10 bg-black/20 p-4">
-                                    <div className="font-semibold text-white">Target sopra la % bio</div>
-                                    <div className="mt-1">Se Et &gt; Ea e la benzina è sotto target, non ci arrivi aggiungendo quel bio.</div>
-                                </li>
-                                <li className="rounded-3xl border border-white/10 bg-black/20 p-4">
-                                    <div className="font-semibold text-white">Upgrade facile</div>
-                                    <div className="mt-1">Se vuoi “aggiungo anche benzina per arrivare a un volume preciso”, si aggiunge una modalità.</div>
-                                </li>
-                            </ul>
                         </div>
                     </Card>
                 </div>
