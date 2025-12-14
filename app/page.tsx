@@ -3,32 +3,46 @@
 import React, { useMemo, useState } from "react";
 
 // Minimal UI wrappers (no external UI library needed)
-function Card({ className = "", children }) {
+
+type WithChildren = { children?: React.ReactNode };
+
+type CardProps = WithChildren & { className?: string };
+function Card({ className = "", children }: CardProps) {
     return <div className={`border rounded-2xl shadow-sm bg-white ${className}`}>{children}</div>;
 }
-function CardContent({ className = "", children }) {
+
+type CardContentProps = WithChildren & { className?: string };
+function CardContent({ className = "", children }: CardContentProps) {
     return <div className={className}>{children}</div>;
 }
-function Button({ variant = "default", className = "", onClick, children, ...props }) {
+
+type ButtonVariant = "default" | "secondary" | "outline";
+
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: ButtonVariant;
+    className?: string;
+};
+
+function Button({ variant = "default", className = "", children, ...props }: ButtonProps) {
     const base = "inline-flex items-center justify-center rounded-xl px-3 py-2 text-sm font-medium border";
-    const variants = {
+    const variants: Record<ButtonVariant, string> = {
         default: "bg-black text-white border-black",
         secondary: "bg-gray-100 text-black border-gray-200",
         outline: "bg-white text-black border-gray-300",
     };
     return (
-        <button onClick={onClick} className={`${base} ${variants[variant] || variants.default} ${className}`} {...props}>
+        <button className={`${base} ${variants[variant]} ${className}`} {...props}>
             {children}
         </button>
     );
 }
 
 
-function clamp(n, a, b) {
+function clamp(n: number, a: number, b: number) {
     return Math.min(b, Math.max(a, n));
 }
 
-function fmt(n, digits = 2) {
+function fmt(n: number, digits: number = 2) {
     if (!Number.isFinite(n)) return "–";
     return new Intl.NumberFormat(undefined, {
         maximumFractionDigits: digits,
@@ -36,10 +50,14 @@ function fmt(n, digits = 2) {
     }).format(n);
 }
 
-function parseNum(v) {
+function parseNum(v: unknown) {
     const n = Number(String(v).replace(",", "."));
     return Number.isFinite(n) ? n : NaN;
 }
+
+type BlendResult =
+    | { ok: false; errors: string[] }
+    | { ok: true; Ve: number; Vt: number; Efinal: number; waterL: number; note: string };
 
 export default function App() {
     const [gasLiters, setGasLiters] = useState("13");
@@ -55,7 +73,7 @@ export default function App() {
         return { Vg, Eg, Ea, Et };
     }, [gasLiters, gasE, ethanolStrength, targetE]);
 
-    const result = useMemo(() => {
+    const result = useMemo<BlendResult>(() => {
         const { Vg, Eg, Ea, Et } = inputs;
 
         const errors = [];
