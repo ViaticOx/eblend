@@ -9,7 +9,7 @@ const orbitron = Orbitron({
 });
 
 export const metadata: Metadata = {
-    title: 'E% Blend Calculator',
+    title: 'Etanolo %  Calculator',
     description: 'Created by EXTREME RACING',
 };
 
