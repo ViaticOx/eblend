@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState } from 'react';
 
-type Preset = 'yourCase' | 'e0' | 'e10' | 'e30' | 'e50';
 type BlendInputs = { Vg: number; Eg: number; Ea: number; Et: number };
 type BlendResult =
     | { ok: false; errors: string[] }
@@ -27,34 +26,27 @@ function clamp(n: number, a: number, b: number): number {
 
 type WithChildren = { children?: React.ReactNode };
 
-type CardProps = WithChildren & { className?: string };
-function Card({ className = '', children }: CardProps) {
+function Card({ className = '', children }: WithChildren & { className?: string }) {
     return (
-        <div
-            className={`rounded-3xl border border-white/10 bg-white/5 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] ${className}`}
-        >
+        <div className={`rounded-3xl border border-white/10 bg-white/5 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] ${className}`}>
             {children}
         </div>
     );
 }
 
-type ButtonVariant = 'primary' | 'ghost' | 'soft';
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    variant?: ButtonVariant;
-    glow?: boolean;
-};
-function Button({ variant = 'soft', glow = false, className = '', children, ...props }: ButtonProps) {
-    const base =
-        'inline-flex items-center justify-center rounded-2xl px-3.5 py-2.5 text-sm font-semibold tracking-tight transition active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed';
-    const styles: Record<ButtonVariant, string> = {
-        primary:
-            'text-black bg-gradient-to-r from-lime-300 via-cyan-300 to-fuchsia-300 shadow-lg shadow-fuchsia-500/10 hover:brightness-110',
-        soft: 'text-white bg-white/10 border border-white/10 hover:bg-white/15 hover:border-white/20',
-        ghost: 'text-white/80 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/10',
-    };
-    const glowRing = glow ? 'ring-1 ring-white/15 hover:ring-white/25' : '';
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { glow?: boolean };
+function Button({ glow = false, className = '', children, ...props }: ButtonProps) {
     return (
-        <button className={`${base} ${styles[variant]} ${glowRing} ${className}`} {...props}>
+        <button
+            className={[
+                'inline-flex items-center justify-center rounded-2xl px-4 py-2.5 text-sm font-bold tracking-tight',
+                'text-black bg-gradient-to-r from-lime-300 via-cyan-300 to-fuchsia-300',
+                'shadow-lg shadow-fuchsia-500/10 hover:brightness-110 active:scale-[0.99] transition',
+                glow ? 'ring-1 ring-white/15 hover:ring-white/25' : '',
+                className,
+            ].join(' ')}
+            {...props}
+        >
             {children}
         </button>
     );
@@ -87,7 +79,7 @@ function BrandTag() {
     return (
         <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2">
             <span className="h-2 w-2 rounded-full bg-gradient-to-r from-lime-300 to-cyan-300" />
-            <span className="text-sm font-black tracking-[0.18em] text-white/90">
+            <span className="text-sm font-black tracking-[0.20em] text-white/95">
         CREATED BY{' '}
                 <span className="bg-gradient-to-r from-lime-300 via-cyan-300 to-fuchsia-300 bg-clip-text text-transparent">
           EXTREME RACING
@@ -115,7 +107,7 @@ function InputField(props: {
             <div className="relative">
                 <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-r from-white/10 via-white/5 to-white/10 opacity-50" />
                 <input
-                    className="relative w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-[15px] font-medium tracking-tight text-white outline-none placeholder:text-white/25 focus:border-white/25 focus:ring-2 focus:ring-white/10"
+                    className="relative w-full rounded-2xl border border-white/10 bg-black/30 reminder:none px-4 py-3 text-[15px] font-semibold tracking-tight text-white outline-none placeholder:text-white/25 focus:border-white/25 focus:ring-2 focus:ring-white/10"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     inputMode="decimal"
@@ -160,10 +152,7 @@ export default function Page() {
         const VeRaw = (Vg * (Et - Eg)) / (Ea - Et);
 
         if (VeRaw < -1e-9) {
-            return {
-                ok: false,
-                errors: ['Risultato negativo: la miscela iniziale è già sopra il target (non puoi “togliere” etanolo aggiungendone).'],
-            };
+            return { ok: false, errors: ['Risultato negativo: sei già sopra il target (non puoi “togliere” etanolo aggiungendone).'] };
         }
 
         if (Et > Ea + 1e-12 && Eg < Et - 1e-12) {
@@ -179,18 +168,11 @@ export default function Page() {
         return { ok: true, Ve, Vt, Efinal, waterL, note };
     }, [inputs]);
 
-    const quickPreset = (preset: Preset) => {
-        if (preset === 'yourCase') {
-            setGasLiters('13');
-            setGasE('6');
-            setEthanolStrength('96');
-            setTargetE('40');
-            return;
-        }
-        if (preset === 'e0') setGasE('0');
-        if (preset === 'e10') setGasE('10');
-        if (preset === 'e30') setTargetE('30');
-        if (preset === 'e50') setTargetE('50');
+    const applyMainPreset = () => {
+        setGasLiters('13');
+        setGasE('6');
+        setEthanolStrength('96');
+        setTargetE('40');
     };
 
     return (
@@ -217,28 +199,14 @@ export default function Page() {
                 </span>
                             </h1>
                             <p className="max-w-xl text-sm leading-relaxed text-white/65 md:text-base">
-                                Inserisci volume iniziale, E% benzina, grado del bioetanolo e target. Calcolo immediato dei litri da aggiungere e stima acqua/impurezze.
+                                Volume iniziale, E% benzina, grado del bioetanolo e target. Risultato immediato: litri da aggiungere + stima acqua/impurezze.
                             </p>
                         </div>
                     </div>
 
-                    {/* Buttons: no "Preset/Target" words */}
-                    <div className="flex flex-wrap gap-2">
-                        <Button variant="primary" glow onClick={() => quickPreset('yourCase')}>
-                            13L E6 → E40 (96)
-                        </Button>
-                        <Button variant="soft" onClick={() => quickPreset('e10')}>
-                            E10
-                        </Button>
-                        <Button variant="soft" onClick={() => quickPreset('e0')}>
-                            E0
-                        </Button>
-                        <Button variant="ghost" onClick={() => quickPreset('e30')}>
-                            E30
-                        </Button>
-                        <Button variant="ghost" onClick={() => quickPreset('e50')}>
-                            E50
-                        </Button>
+                    {/* SOLO 1 pulsante */}
+                    <div className="flex">
+                        <Button glow onClick={applyMainPreset}>13L E6 → E40 (96)</Button>
                     </div>
                 </div>
 
@@ -285,12 +253,6 @@ export default function Page() {
                                     placeholder="es. 40"
                                     unit="%"
                                 />
-                            </div>
-
-                            <div className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-4">
-                                <div className="text-xs font-semibold text-white/60">
-                                    Formula: (Vg·Eg + Ve·Ea) / (Vg + Ve) = Et → Ve = Vg·(Et−Eg)/(Ea−Et)
-                                </div>
                             </div>
                         </div>
                     </Card>
